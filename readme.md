@@ -101,5 +101,9 @@ Some interesting sources for further reading are
 
   * [Semi supervised learning, book, by Chapelle, Scholkopf and Zien](https://mitpress.mit.edu/books/semi-supervised-learning)
   * [Graph based semi-supervised learning, a lecture by Zoubin Ghahramani](https://www.youtube.com/watch?v=HZQOvm0fkLA)
+  * Read more on kernels at (in order of my preference)
+    1. [Chapter  14, Machine learning, a probabilistic view, Kevin Murphy](https://mitpress.mit.edu/books/machine-learning-0)
+    2. [Chapter 6, Pattern recognition and machine learning, Chris Bishop](http://www.springer.com/gp/book/9780387310732)
+    3. [Chapter 4, Gaussian Processes, Rasmussen and Williams](https://mitpress.mit.edu/books/gaussian-processes-machine-learning)
 
 As always, I am curious to any comments and questions. Reach me at romijndersrob@gmail.com
