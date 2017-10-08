@@ -15,7 +15,7 @@ To learn also from our unlabeled data, we need to make assumptions.
   * __The different classes lie near sub-manifolds__ This assumption states that the data of the different classes crowd together near sub manifolds. This will help SSL, because we can learn about the various sub manifolds from our data points, regardless of the labels.
   * __The decision boundary lies in low density regions in the input space.__ This assumption follows from the second and third assumption. If we assume that all data lie near a manifold and the classes lie near sub manifolds, then it follows that the regions between these sub manifolds have low density. This helps SSL, because we can infer these low density regions from the unlabeled data.
 
-Roughly, I like to summarize these assumptions into a smoothness property. From these assumptions, it follows that any model for this data has a smoothness property. Nearby points must have nearby labels. The notion of _near_ is relative to the manifold. The manifold might be curved in some directions, 
+Roughly, I like to summarize these assumptions into a smoothness property. From these assumptions, it follows that any model for this data has a smoothness property. Nearby points must have nearby labels. The notion of _near_ is relative to the manifold. The manifold might be curved in some directions, but on any small region, we may interpret it as an Euclidean space. (I like the intro of [this](https://en.wikipedia.org/wiki/Manifold) wikipeddia article)
  
 
 # Transductive or inductive learning
@@ -40,7 +40,7 @@ y_pred = random_walk(y_labeled, X_labeled, X_unlabeled, X_test, gaussian_kernel(
 
 # How to convert a dataset to a graph?
 A graph consist of nodes and edges. An example of a graph looks like this:
-![Example of a graph](www.linktograph.com)
+![Example of a graph](https://github.com/RobRomijnders/ssl_graph/blob/master/im/graph_example.png?raw=true)
 
 We go from data set to graph in three steps
 
@@ -49,6 +49,9 @@ We go from data set to graph in three steps
   * We put weight on this edge according to a kernel function. A kernel function takes two data samples and outputs a measure of similarity. In our implementation, we use a Gaussian kernel. (not to be confused with a Gaussian distribution)
 
 Now we have a graph, we look back at our hypotheses we made for semi supervised learning. It stated that nearby points will have similar labels. In terms of our graph, this translates to the following: *if an edge contains a high weight, its two nodes will have similar labels.* This insight underpins both algorithms to come. 
+
+## Kernels
+Kernels are central in our conversion from data samples to the graph. Therefore, I'd like to spend a few words on it. A kernel measures the similarity between two objects. These objects might be vectors, but could also be objects that we don't immediately imagine as vectors. For example, people have designed kernels for proteins, texts and even graphs themselves. In general, a kernel maps any two objects to a positive number, so it implements <img alt="$f: \mathcal{X} \times \mathcal{X} \rightarrow \mathbb{R}^+$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/c2ea507b252afab7be5aa945f051ac82.svg?invert_in_darkmode" align=middle width="119.40621pt" height="26.17758pt"/>.
 
 # The algorithms
 ## Label propagation
@@ -62,7 +65,7 @@ The random walk algorithm is a little bit more involved. It starts from taking r
   3. When I have jumped to a labeled node, I will stay there and stop my walk
   4. Now the question follows: for each of the labeled nodes, what is my probability of ending at that particular node
 
-This random walker will give rise to a probability distribution over all the labeled nodes. Let's imagine that as a vector, <img alt="$p_i \in \mathbb{R}^{N_{labeled}}$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/025951fd6d5bcb498fe3956197e34c95.svg?invert_in_darkmode" align=middle width="92.794185pt" height="27.65697pt"/>. Then <img alt="$p_j$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/7f131a60c8e7bb2b22f383f7bd49e2c0.svg?invert_in_darkmode" align=middle width="14.37513pt" height="14.15535pt"/> indicates the probability that we start at unlabeled node, i, and end at the labeled node, j.
+This random walker will give rise to a probability distribution over all the labeled nodes. Let's imagine that as a vector, <img alt="$p_i \in \mathbb{R}^{N_{labeled}}$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/025951fd6d5bcb498fe3956197e34c95.svg?invert_in_darkmode" align=middle width="92.794185pt" height="27.65697pt"/>. Then <img alt="$p_{ij}$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/200cdf959030dfee4638a263f63db3ae.svg?invert_in_darkmode" align=middle width="19.025985pt" height="14.15535pt"/> indicates the probability that we start at unlabeled node, i, and end at the labeled node, j.
 
 Repeating these steps for each unlabeled node and stacking those vectors in a matrix results in a matrix, <img alt="$P \in \mathbb{R}^{N_{unlabeled} \times N_{labeled} }$" src="https://rawgit.com/RobRomijnders/ssl_graph/master/svgs/cb3c4afebb4ad7461522519d69a88833.svg?invert_in_darkmode" align=middle width="164.265255pt" height="27.65697pt"/>. In discrete mathematics, people will refer to this matrix at the infinity matrix. It got this name, because it follows from allowing the random walker an infinite amount of time to reach the labeled nodes.
 
@@ -72,18 +75,24 @@ Now how does this help us with semi supervised learning? To make a prediction on
 Let's grab back at our hypothese and see how these algorithms used them
 
   * __The unlabeled data carry information that is useful for classification__ In both algoritms, we used unlabeled data to benefit the predictions. In label propagation, unlabeled data might act as a highway to propagate labels. In the random walk, the random walker can walk via unlabeled nodes to reach labeled nodes.
-  * __The data lies near on a low-dimensional manifold__ Both algorithm relied on kernels. Kernels only depend on local similarity. Therefore, it can model the possibly curved manifold that the data crowds on.
+  * __The data lies near on a low-dimensional manifold__ Both algorithm relied on kernels. Kernels only depend on local similarity. Therefore, it can model the, possibly curved, manifold that the data crowds on.
   * __The different classes lie near sub-manifolds__ In both algorithm, the choices are made based on the weights on the edges. Labels are more likely propagated over edges with high weight. The random walker will more probably walk over edges with high weight. For any sub manifold, this ensures that the labels are more likely to be propagated over the sub manifold
   * __The decision boundary lies in low density regions in the input space.__ As the label propagation and random walker make their decisions based on the weight, labels are less likely to cross low density regions where the weights will be low.
 
 # Results
 To visualize the inner workings of the algorithms, we work on 2D data. The code contains function `generate_data()` and `generate_data2()`. They result in the following diagrams:
-![first datagen](www.linktodiagram.com)
+![first datagen](https://github.com/RobRomijnders/ssl_graph/blob/master/im/data2.png?raw=true)
 
-![second datagen](www.linktodiagram.com)
+![second datagen](https://github.com/RobRomijnders/ssl_graph/blob/master/im/data.png?raw=true)
 The problem consist of classifying the two classes.
 
 The diagram below displays the results as more unlabeled data is used. We also plot the mean absolute error to see how confident the algorithm is in a prediction.
+
+![results](https://github.com/RobRomijnders/ssl_graph/blob/master/im/figure_2.png?raw=true)
+
+# Discussion
+For the random walk, we see that the performance improves as we supply more unlabeled data. However, for the label propagation, we observe a constant performance. So somehow, I think the hypotheses don'd work for label propagation. I am curious to learn where the reasoning breaks. Please reach out if you have any clues.
+
 
 
 # Further reading
@@ -92,3 +101,5 @@ Some interesting sources for further reading are
 
   * [Semi supervised learning, book, by Chapelle, Scholkopf and Zien](https://mitpress.mit.edu/books/semi-supervised-learning)
   * [Graph based semi-supervised learning, a lecture by Zoubin Ghahramani](https://www.youtube.com/watch?v=HZQOvm0fkLA)
+
+As always, I am curious to any comments and questions. Reach me at romijndersrob@gmail.com
